@@ -1,29 +1,24 @@
 name: Monitoramento de Preços Diário
 
 on:
+  push:
+    branches: [ main ]  # Isso fará o robô rodar toda vez que você enviar código
   schedule:
-    # Rodar todos os dias às 11:00 UTC (08:00 no horário de Brasília)
     - cron: '0 11 * * *'
-  workflow_dispatch: # Isso permite que você aperte um botão para testar agora mesmo
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout do código
-        uses: actions/checkout@v3
-
-      - name: Configurar Python
+      - uses: actions/checkout@v3
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-
-      - name: Instalar bibliotecas
-        run: |
-          pip install requests beautifulsoup4 supabase
-
-      - name: Rodar script
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 supabase
+      - name: Run script
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
