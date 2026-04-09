@@ -1,0 +1,30 @@
+name: Monitoramento de Preços Diário
+
+on:
+  schedule:
+    # Rodar todos os dias às 11:00 UTC (08:00 no horário de Brasília)
+    - cron: '0 11 * * *'
+  workflow_dispatch: # Isso permite que você aperte um botão para testar agora mesmo
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Instalar bibliotecas
+        run: |
+          pip install requests beautifulsoup4 supabase
+
+      - name: Rodar script
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python principal.py
