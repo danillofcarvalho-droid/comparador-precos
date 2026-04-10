@@ -4,8 +4,8 @@ import streamlit as st
 
 # --- CONFIGURAÇÕES DO SEU PROJETO ---
 # Pegue esses dados no seu painel do Supabase: Settings > API
-URL = st.secrets["SUPABASE_URL"]
-KEY = st.secrets["SUPABASE_KEY"]
+URL_PROJETO = st.secrets["SUPABASE_URL"]
+CHAVE_API = st.secrets["SUPABASE_KEY"]
 
 # Inicializa o cliente do Supabase
 supabase: Client = create_client(URL_PROJETO, CHAVE_API)
