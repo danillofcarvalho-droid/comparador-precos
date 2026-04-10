@@ -1,10 +1,11 @@
 import os
 from supabase import create_client, Client
+import streamlit as st
 
 # --- CONFIGURAÇÕES DO SEU PROJETO ---
 # Pegue esses dados no seu painel do Supabase: Settings > API
-URL_PROJETO = 'https://lzaktbpmaanlgcwuhbkj.supabase.co'
-CHAVE_API = "sb_publishable_EMfgvW0eejC7yR2WA0tLOg_yhyovFFq"
+URL = st.secrets["SUPABASE_URL"]
+KEY = st.secrets["SUPABASE_KEY"]
 
 # Inicializa o cliente do Supabase
 supabase: Client = create_client(URL_PROJETO, CHAVE_API)
