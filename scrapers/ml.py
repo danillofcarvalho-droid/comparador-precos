@@ -1,25 +1,22 @@
 import requests
 from bs4 import BeautifulSoup
 
-def coletar_preco_ml(url_ml):
-    cabecalho = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
-    }
-
+def coletar_preco_ml(url):
+    headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        resposta = requests.get(url_ml, headers=cabecalho, timeout=10)
-        sopa = BeautifulSoup(resposta.text, 'html.parser')
+        response = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-        # O Mercado Livre costuma usar a classe 'andes-money-amount__fraction'
-        elemento_preco = sopa.find("span", class_="andes-money-amount__fraction")
-
-        if elemento_preco:
-            # Remove pontos de milhar para não quebrar o float
-            preco_texto = elemento_preco.text.replace('.', '').strip()
-            return float(preco_texto)
-        
+        # Esta é a forma mais estável: buscar a meta tag de preço
+        meta_preco = soup.find("meta", itemprop="price")
+        if meta_preco:
+            return float(meta_preco["content"])
+            
+        # Plano B se a meta tag falhar
+        preco_frac = soup.find("span", class_="andes-money-amount__fraction")
+        if preco_frac:
+            return float(preco_frac.get_text().replace(".", ""))
+            
         return None
-
-    except Exception as e:
-        print(f"❌ Erro no Mercado Livre: {e}")
+    except:
         return None
