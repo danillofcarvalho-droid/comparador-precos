@@ -3,39 +3,30 @@ from bs4 import BeautifulSoup
 from urllib.parse import quote
 
 def buscar_link_ml(nome_produto):
-    termo_busca = quote(nome_produto)
-    url_busca = f"https://lista.mercadolivre.com.br/{termo_busca}"
-    
-    # Headers mais completos para parecer um navegador real
-    cabecalho = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
-    }
+    from urllib.parse import quote
+    termo = quote(nome_produto)
+    url = f"https://lista.mercadolivre.com.br/{termo}"
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 
     try:
-        resposta = requests.get(url_busca, headers=cabecalho, timeout=10)
+        res = requests.get(url, headers=headers, timeout=10)
+        sopa = BeautifulSoup(res.text, 'html.parser')
         
-        # Se o ML bloquear, ele retorna código 403 ou 429
-        if resposta.status_code != 200:
-            print(f"Erro de acesso: Status {resposta.status_code}")
-            return None
-
-        sopa = BeautifulSoup(resposta.text, 'html.parser')
-        # Se isso imprimir um texto curto ou com "Access Denied", você foi bloqueado temporariamente
-        print(sopa.title.text)
-
-        # Tentativa de pegar todos os links que pareçam de produtos
-        itens = sopa.find_all("a", href=True)
+        # Tentativa 1: Classe padrão de busca
+        link_tag = sopa.find("a", class_="ui-search-link__title-card") or \
+                   sopa.find("a", class_="ui-search-item__group__element ui-search-link") or \
+                   sopa.find("a", {"class": "ui-search-link"}) # Tentativa genérica
         
-        for item in itens:
-            link = item['href']
-            # Filtro reforçado: links de produtos reais do ML
-            if ("articulo.mercadolivre.com.br" in link or "/p/MLB" in link) and "/navigation/" not in link:
-                return link
+        if link_tag:
+            return link_tag['href']
+            
+        # Tentativa 2: Se não achou pela classe, pega o primeiro link que contenha "articulo"
+        for a in sopa.find_all("a", href=True):
+            if "articulo.mercadolivre.com.br" in a['href']:
+                return a['href']
                 
         return None
-    except Exception as e:
-        print(f"Erro: {e}")
+    except:
         return None
 
 def buscar_link_amazon(nome_produto):
