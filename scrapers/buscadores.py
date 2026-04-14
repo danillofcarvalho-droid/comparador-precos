@@ -3,30 +3,38 @@ from bs4 import BeautifulSoup
 from urllib.parse import quote
 
 def buscar_link_ml(nome_produto):
-    from urllib.parse import quote
     termo = quote(nome_produto)
     url = f"https://lista.mercadolivre.com.br/{termo}"
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
 
     try:
-        res = requests.get(url, headers=headers, timeout=10)
+        res = requests.get(url, headers=headers, timeout=15)
+        
+        # DEBUG para ver nos logs do Streamlit Cloud
+        print(f"DEBUG ML STATUS: {res.status_code}")
+        
         sopa = BeautifulSoup(res.text, 'html.parser')
-        
-        # Tentativa 1: Classe padrão de busca
-        link_tag = sopa.find("a", class_="ui-search-link__title-card") or \
-                   sopa.find("a", class_="ui-search-item__group__element ui-search-link") or \
-                   sopa.find("a", {"class": "ui-search-link"}) # Tentativa genérica
-        
-        if link_tag:
-            return link_tag['href']
-            
-        # Tentativa 2: Se não achou pela classe, pega o primeiro link que contenha "articulo"
+
+        # Estratégia 1: Busca por seletores CSS comuns (mais estáveis)
+        link_tag = sopa.select_one('a.ui-search-item__group__element.ui-search-link') or \
+                   sopa.select_one('a.ui-search-link') or \
+                   sopa.select_one('.ui-search-result__content a')
+
+        if link_tag and 'href' in link_tag.attrs:
+            return link_tag['href'].split('#')[0]
+
+        # Estratégia 2: Backup - procura qualquer link que pareça um produto
         for a in sopa.find_all("a", href=True):
-            if "articulo.mercadolivre.com.br" in a['href']:
-                return a['href']
-                
+            href = a['href']
+            if "articulo.mercadolivre.com.br" in href and "/p/" in href:
+                return href.split('#')[0]
+
         return None
-    except:
+    except Exception as e:
+        print(f"Erro no Scraper ML: {e}")
         return None
 
 def buscar_link_amazon(nome_produto):
