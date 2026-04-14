@@ -1,8 +1,8 @@
 from conexao_banco import supabase
 # Importando scraper
-from scrapers.ml import coletar_preco_ml
 from scrapers.magalu import coletar_preco_magalu
-from scrapers.amazon import coletar_preco_amazon 
+from scrapers.amazon import coletar_preco_amazon
+from scrapers.kabum import coletar_preco_kabum
 
 def executar_comparador():
     print("\n--- 🔍 Iniciando Comparador de Preços Pro ---")
@@ -35,16 +35,6 @@ def executar_comparador():
             else:
                 print("❌ Amazon: Preço não encontrado ou acesso bloqueado.")
 
-        # --- VERIFICAÇÃO MERCADO LIVRE 
-        if produto.get('url_mercadolivre'):
-            print(f"🔎 Consultando Mercado Livre...")
-            valor_ml = coletar_preco_ml(produto['url_mercadolivre'])
-            if valor_ml:
-                print(f"✅ Mercado Livre: R$ {valor_ml}")
-                precos_encontrados.append(valor_ml)
-            else:
-                print("❌ Mercado Livre: Preço não encontrado.")
-
         # --- VERIFICAÇÃO MAGALU ---
         if produto.get('url_magalu'):
             print(f"🔎 Consultando Magalu...")
@@ -54,6 +44,16 @@ def executar_comparador():
                 precos_encontrados.append(valor_magalu)
             else:
                 print("❌ Magalu: Preço não encontrado.")
+
+        # --- VERIFICAÇÃO KABUM ---
+        if produto.get('url_kabum'):
+            print(f"🔎 Consultando KaBuM!...")
+            valor_kabum = coletar_preco_kabum(produto['url_kabum'])
+            if valor_kabum:
+                print(f"✅ KaBuM!: R$ {valor_kabum}")
+                precos_encontrados.append(valor_kabum)
+            else:
+                print("❌ KaBuM!: Preço não encontrado.")
 
         # --- LÓGICA DO MENOR PREÇO ---
         if precos_encontrados:

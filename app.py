@@ -3,6 +3,7 @@ import time  # Import necessário para o sleep
 from scrapers.buscadores import buscar_link_magalu, buscar_link_amazon
 from scrapers.magalu import coletar_preco_magalu
 from scrapers.amazon import coletar_preco_amazon
+from scrapers.kabum import buscar_link_kabum, coletar_preco_kabum
 
 st.title("🔍 Comparador de Preços Pro")
 
@@ -10,7 +11,7 @@ produto_usuario = st.text_input("Digite o nome do produto (seja específico):")
 
 if st.button("Comparar Agora"):
     if produto_usuario:
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         
         # --- BUSCA NA MAGALU ---
         with col1:
@@ -46,5 +47,25 @@ if st.button("Comparar Agora"):
                     st.write(f"[Link direto para conferir]({link_amz})")
             else:
                 st.error("Nenhum produto encontrado na Amazon.")
+
+        # --- PAUSA ESTRATÉGICA ---
+        # Aguarda 2 segundos antes de consultar a KaBuM
+        time.sleep(2)
+
+        # --- BUSCA NA KABUM ---
+        with col3:
+            st.subheader("KaBuM!")
+            link_kabum = buscar_link_kabum(produto_usuario)
+
+            if link_kabum:
+                preco_kabum = coletar_preco_kabum(link_kabum)
+                if preco_kabum:
+                    st.metric("Preço KaBuM!", f"R$ {preco_kabum:,.2f}")
+                    st.link_button("Ver na KaBuM!", link_kabum)
+                else:
+                    st.warning("Não conseguimos ler o preço.")
+                    st.write(f"[Link direto para conferir]({link_kabum})")
+            else:
+                st.error("Nenhum produto encontrado na KaBuM.")
     else:
         st.error("Digite algo para pesquisar!")
