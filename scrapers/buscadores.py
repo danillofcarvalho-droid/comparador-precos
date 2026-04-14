@@ -1,12 +1,54 @@
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit, urlunsplit
 
 
 def _nova_sessao():
     sessao = requests.Session()
     sessao.trust_env = False
     return sessao
+
+
+def _normalizar_link_magalu(href):
+    if not href:
+        return None
+
+    if href.startswith("/"):
+        href = "https://www.magazineluiza.com.br" + href
+
+    partes = urlsplit(href)
+    dominio = partes.netloc.lower()
+    caminho = partes.path.rstrip("/")
+
+    if "magazineluiza.com.br" not in dominio:
+        return None
+
+    if "/p/" not in caminho:
+        return None
+
+    # Remove query string e fragmentos de campanha/tracking.
+    return urlunsplit((partes.scheme or "https", partes.netloc, caminho + "/", "", ""))
+
+
+def link_magalu_disponivel(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+        "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+    }
+
+    try:
+        session = _nova_sessao()
+        res = session.get(url, headers=headers, timeout=10)
+        if res.status_code != 200:
+            return False
+
+        texto = res.text.lower()
+        if "forbidden" in texto or "azion - default error page" in texto:
+            return False
+
+        return True
+    except Exception:
+        return False
 
 
 def buscar_link_amazon(nome_produto):
@@ -71,11 +113,9 @@ def buscar_link_magalu(nome_produto):
         for seletor in seletores:
             item = sopa.select_one(seletor)
             if item and item.get("href"):
-                href = item["href"]
-                if href.startswith("/"):
-                    return "https://www.magazineluiza.com.br" + href
-                if "magazineluiza.com.br" in href:
-                    return href
+                link_normalizado = _normalizar_link_magalu(item["href"])
+                if link_normalizado:
+                    return link_normalizado
 
         return None
     except Exception as e:

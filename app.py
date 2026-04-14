@@ -1,6 +1,6 @@
 import streamlit as st
 import time  # Import necessário para o sleep
-from scrapers.buscadores import buscar_link_magalu, buscar_link_amazon
+from scrapers.buscadores import buscar_link_magalu, buscar_link_amazon, link_magalu_disponivel
 from scrapers.magalu import coletar_preco_magalu
 from scrapers.amazon import coletar_preco_amazon
 from scrapers.kabum import buscar_link_kabum, coletar_preco_kabum
@@ -17,15 +17,17 @@ if st.button("Comparar Agora"):
         with col1:
             st.subheader("Magalu")
             link_magalu = buscar_link_magalu(produto_usuario)
+            link_magalu_ok = bool(link_magalu) and link_magalu_disponivel(link_magalu)
 
-            if link_magalu:
+            if link_magalu_ok:
                 preco_magalu = coletar_preco_magalu(link_magalu)
                 if preco_magalu:
                     st.metric("Preço Magalu", f"R$ {preco_magalu:,.2f}")
                     st.link_button("Ver na Magalu", link_magalu)
                 else:
                     st.warning("Não conseguimos ler o preço.")
-                    st.write(f"[Link direto para conferir]({link_magalu})")
+            elif link_magalu:
+                st.warning("Produto localizado, mas o link da Magalu não está disponível no momento.")
             else:
                 st.error("Nenhum produto encontrado na Magalu.")
 
