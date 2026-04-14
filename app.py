@@ -7,7 +7,6 @@ from scrapers.amazon import coletar_preco_amazon
 st.title("🔍 Comparador de Preços Pro")
 
 produto_usuario = st.text_input("Digite o nome do produto (seja específico):")
-link_magalu_manual = st.text_input("Link da Magalu (opcional, use se a busca automática falhar):")
 
 if st.button("Comparar Agora"):
     if produto_usuario:
@@ -16,7 +15,7 @@ if st.button("Comparar Agora"):
         # --- BUSCA NA MAGALU ---
         with col1:
             st.subheader("Magalu")
-            link_magalu = link_magalu_manual.strip() if link_magalu_manual else buscar_link_magalu(produto_usuario)
+            link_magalu = buscar_link_magalu(produto_usuario)
 
             if link_magalu:
                 preco_magalu = coletar_preco_magalu(link_magalu)
@@ -27,8 +26,7 @@ if st.button("Comparar Agora"):
                     st.warning("Não conseguimos ler o preço.")
                     st.write(f"[Link direto para conferir]({link_magalu})")
             else:
-                st.warning("Não encontramos o produto na Magalu pela busca automática.")
-                st.caption("Se quiser, cole acima o link direto da Magalu para comparar mesmo assim.")
+                st.error("Nenhum produto encontrado na Magalu.")
 
         # --- PAUSA ESTRATÉGICA ---
         # Aguarda 2 segundos antes de consultar a Amazon
