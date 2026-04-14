@@ -3,9 +3,13 @@ from supabase import create_client, Client
 import streamlit as st
 
 # --- CONFIGURAÇÕES DO SEU PROJETO ---
-# Pegue esses dados no seu painel do Supabase: Settings > API
-URL_PROJETO = st.secrets["SUPABASE_URL"]
-CHAVE_API = st.secrets["SUPABASE_KEY"]
+# Tenta pegar do Streamlit Secrets, se falhar (script comum), pega das variáveis de ambiente
+try:
+    URL_PROJETO = st.secrets["SUPABASE_URL"]
+    CHAVE_API = st.secrets["SUPABASE_KEY"]
+except:
+    URL_PROJETO = os.getenv("SUPABASE_URL")
+    CHAVE_API = os.getenv("SUPABASE_KEY")
 
 # Inicializa o cliente do Supabase
 supabase: Client = create_client(URL_PROJETO, CHAVE_API)
