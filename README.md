@@ -38,7 +38,7 @@ O projeto tambem possui um script auxiliar para consultar links salvos no Supaba
 ## Estrutura do Projeto
 
 ```text
-conexao_banco/
+comparador_precos/
 |-- app.py
 |-- principal.py
 |-- conexao_banco.py
@@ -57,7 +57,7 @@ conexao_banco/
 
 ```bash
 git clone <URL_DO_SEU_REPOSITORIO>
-cd conexao_banco
+cd comparador_precos
 ```
 
 ### 2. Criar e ativar um ambiente virtual
